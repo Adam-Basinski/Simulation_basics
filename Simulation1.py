@@ -22,7 +22,7 @@ def plot_simulation(foods, population):
         X_food.append(foods[i].x_coord)
         Y_food.append(foods[i].y_coord)
 
-    plt.plot(X_food, Y_food, linestyle='None', marker='.')
+    plt.plot(X_food, Y_food, linestyle='None', marker='.', color='black')
 
     # Draw "targeting rays"
     for org in population:
