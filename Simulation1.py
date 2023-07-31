@@ -94,12 +94,8 @@ def simulate(settings, population, foods):
         if org.fitness <= 0:
             del population[population.index(org)]
         # Move
-        if is_any_food(food_list=foods):
-            org.x_coord += org.velocity * cos(org.rotation)
-            org.y_coord += org.velocity * sin(org.rotation)
-        else:
-            org.x_coord += uniform(-org.velocity, org.velocity)
-            org.y_coord += uniform(-org.velocity, org.velocity)
+        org.move_org(is_any_food(food_list=foods))
+
         # Borders -> Delete organism, if it somehow hit borders
         if org.x_coord > settings['x_max'] or org.x_coord < settings['x_min'] or org.y_coord > settings['y_max'] or org.y_coord < settings['y_min']:
             del population[population.index(org)]

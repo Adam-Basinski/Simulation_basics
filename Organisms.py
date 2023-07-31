@@ -1,5 +1,5 @@
 from random import uniform
-from math import sqrt, atan2
+from math import sqrt, atan2, cos, sin
 from numpy import nan
 
 
@@ -24,6 +24,14 @@ class Organism1():
     def calc_next_heading(self, target):
         self.rotation = atan2(
             target.y_coord - self.y_coord, target.x_coord - self.x_coord)
+
+    def move_org(self, isAnyTarget):
+        if isAnyTarget:
+            self.x_coord += self.velocity * cos(self.rotation)
+            self.y_coord += self.velocity * sin(self.rotation)
+        else:
+            self.x_coord += uniform(-self.velocity, self.velocity)
+            self.y_coord += uniform(-self.velocity, self.velocity)
 
 
 class Food():

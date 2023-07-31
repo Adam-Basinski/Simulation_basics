@@ -14,3 +14,4 @@ settings['v_max'] = 0.05
 settings['v_min'] = 0.01
 settings['start_population'] = 10
 settings['eating_distance'] = 0.05
+settings['mate_search_fitness'] = 100
