@@ -26,8 +26,8 @@ def plot_simulation(foods, population):
 
     # Draw "targeting rays"
     for org in population:
-        plt.plot([org.food_at.x_coord, org.x_coord], [
-            org.food_at.y_coord, org.y_coord], marker='x', linestyle=':', color='green')
+        plt.plot([org.target.x_coord, org.x_coord], [
+            org.target.y_coord, org.y_coord], marker='x', linestyle=':', color='green')
         if len(population) <= 10:
             plt.text(org.x_coord, org.y_coord, org.fitness)
 
@@ -84,13 +84,13 @@ def simulate(settings, population, foods):
                 if food_to_organism_dist < org.near_food_distance:
                     org.near_food_distance = food_to_organism_dist
                     # Memorize chosen food piece
-                    org.food_at = food
-        if org.food_at.re_spawn_bool == False:
-            org.calc_next_heading(org.food_at)
+                    # There are no .target in init
+                    org.target = food
+        org.calc_next_heading(org.target)
+
         # Hunger
         org.fitness = round(org.fitness-(settings["food_drop"]), 4)
-        # Starvation
-        # Delete organism if it starve to death
+        # Starvation ---- Delete organism if it starve to death
         if org.fitness <= 0:
             del population[population.index(org)]
         # Move
