@@ -63,3 +63,5 @@ class Food():
     def temporarily_de_spawn(self):
         self.x_coord = nan
         self.y_coord = nan
+
+# test for branch in VS code
