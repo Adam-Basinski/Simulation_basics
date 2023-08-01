@@ -66,35 +66,56 @@ def simulate(settings, population, foods):
                     org.fitness += food.energy
                     org.x_coord = food.x_coord
                     org.y_coord = food.y_coord
-                    org.near_food_distance = 100
+                    org.near_target_distance = 100
                     # Update food
                     food.re_spawn_bool = True
                     food.temporarily_de_spawn()
 
     # Organism takes action
     for org in population:
-        # Organism looks for nearest food
-        # Reset nearest food distance
-        org.near_food_distance = 100
-        for food in foods:
-            if food.re_spawn_bool == False:
-                # Calculate distance for this piece of food
-                food_to_organism_dist = org.calc_distance(food)
-                # Check, if last food piece was closer than current
-                if food_to_organism_dist < org.near_food_distance:
-                    org.near_food_distance = food_to_organism_dist
-                    # Memorize chosen food piece
-                    # There are no .target in init
-                    org.target = food
-        org.calc_next_heading(org.target)
-
         # Hunger
         org.fitness = round(org.fitness-(settings["food_drop"]), 4)
+
         # Starvation ---- Delete organism if it starve to death
         if org.fitness <= 0:
             del population[population.index(org)]
+
+        # Mating search
+        org.is_ready_to_mate(settings, population)
+
+        # Organism is looking for nearest food
+        if not org.readyToMate:
+
+            # Reset nearest food distance
+            org.near_target_distance = 100
+            for food in foods:
+                if food.re_spawn_bool == False:
+                    # Calculate distance for this piece of food
+                    food_to_organism_dist = org.calc_distance(food)
+                    # Check, if last food piece was closer than current
+                    if food_to_organism_dist < org.near_target_distance:
+                        org.near_target_distance = food_to_organism_dist
+                        # Memorize chosen food piece
+                        # There are no .target in init
+                        org.target = food
+
+        # Organism is looking for mate partner
+        else:
+            # Work mostly the same to above
+            # Reset the nearest mate distance
+            org.near_target_distance = 100
+            for potential_org in population:
+                # check if organism isn't looking for himself
+                if org != potential_org:
+                    mate_to_organism_dist = org.calc_distance(potential_org)
+                    if mate_to_organism_dist < org.near_target_distance:
+                        org.near_target_distance = mate_to_organism_dist
+                        org.target = potential_org
+
+        org.calc_next_heading(org.target)
+
         # Move
-        org.move_org(is_any_food(food_list=foods))
+        org.move_org((is_any_food(food_list=foods) or org.readyToMate))
 
         # Borders -> Delete organism, if it somehow hit borders
         if org.x_coord > settings['x_max'] or org.x_coord < settings['x_min'] or org.y_coord > settings['y_max'] or org.y_coord < settings['y_min']:

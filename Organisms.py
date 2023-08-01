@@ -14,7 +14,7 @@ class Organism1():
 
         self.rotation = 0
         self.fitness = 5
-        self.near_food_distance = 100
+        self.near_target_distance = 100
         self.readyToMate = False
 
         self.name = name
@@ -34,9 +34,11 @@ class Organism1():
             self.x_coord += uniform(-self.velocity, self.velocity)
             self.y_coord += uniform(-self.velocity, self.velocity)
 
-    def is_ready_to_mate(self, settings):
+    def is_ready_to_mate(self, settings, population):
         if self.fitness >= 2*settings['mate_search_fitness']:
-            self.readyToMate = True
+            for organism in population:
+                if (organism != self and organism.fitness >= 2*settings['mate_search_fitness']):
+                    self.readyToMate = True
 
 class Food():
     def __init__(self, settings) -> None:
