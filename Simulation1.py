@@ -2,8 +2,6 @@ import Organisms                                # Separated lib with organisms
 import matplotlib.pyplot as plt
 from simulation_settings import settings        # Separated settings file
 from matplotlib.animation import FuncAnimation  # To animate and run simulation
-from random import uniform
-from math import cos, sin
 
 foods = []
 population = []
@@ -28,7 +26,7 @@ def plot_simulation(foods, population):
     for org in population:
         plt.plot([org.target.x_coord, org.x_coord], [
             org.target.y_coord, org.y_coord], marker='x', linestyle=':', color='green')
-        if len(population) <= 10:
+        if len(population) <= 20:
             plt.text(org.x_coord, org.y_coord, org.fitness)
 
     # Draw organisms
@@ -58,10 +56,9 @@ def simulate(settings, population, foods):
     for food in foods:
         if food.re_spawn_bool == False:
             for org in population:
-                food_to_organism_dist = org.calc_distance(food)
                 # Eating
                 # If the food is close enough, organism will eat food and re spawn it.
-                if food_to_organism_dist <= org.velocity:
+                if org.calc_distance(food) <= org.velocity:
                     # Update organism
                     org.fitness += food.energy
                     org.x_coord = food.x_coord
@@ -70,6 +67,22 @@ def simulate(settings, population, foods):
                     # Update food
                     food.re_spawn_bool = True
                     food.temporarily_de_spawn()
+
+    # Organism produce offspring
+    for org in population:
+        # Check if organism is ready to mate
+        if org.readyToMate and org.target.readyToMate:
+            # If distance is small enough, produce offspring
+            if org.calc_distance(org.target) <= org.velocity:
+                # Append population with new offspring
+                population.append(Organisms.Organism1(settings=settings))
+                # Modify position and perks (velocity) based on parents perks
+                population[-1].modify_offspring(org, org.target)
+                # Making those 2 organisms no longer ready to mate
+                org.target.fitness = round(org.target.fitness/2, 2)
+                org.target.readyToMate = False
+                org.fitness = round(org.fitness/2, 2)
+                org.readyToMate = False
 
     # Organism takes action
     for org in population:
@@ -85,36 +98,14 @@ def simulate(settings, population, foods):
 
         # Organism is looking for nearest food
         if not org.readyToMate:
-
-            # Reset nearest food distance
-            org.near_target_distance = 100
-            for food in foods:
-                if food.re_spawn_bool == False:
-                    # Calculate distance for this piece of food
-                    food_to_organism_dist = org.calc_distance(food)
-                    # Check, if last food piece was closer than current
-                    if food_to_organism_dist < org.near_target_distance:
-                        org.near_target_distance = food_to_organism_dist
-                        # Memorize chosen food piece
-                        # There are no .target in init
-                        org.target = food
+            org.look_for_food(foods)
 
         # Organism is looking for mate partner
         else:
-            # Work mostly the same to above
-            # Reset the nearest mate distance
-            org.near_target_distance = 100
-            for potential_org in population:
-                # check if organism isn't looking for himself
-                if org != potential_org:
-                    mate_to_organism_dist = org.calc_distance(potential_org)
-                    if mate_to_organism_dist < org.near_target_distance:
-                        org.near_target_distance = mate_to_organism_dist
-                        org.target = potential_org
-
-        org.calc_next_heading(org.target)
+            org.look_for_mate(population)
 
         # Move
+        org.calc_next_heading(org.target)
         org.move_org((is_any_food(food_list=foods) or org.readyToMate))
 
         # Borders -> Delete organism, if it somehow hit borders
@@ -141,9 +132,10 @@ def animate(i):
     simulate(settings=settings, population=population, foods=foods)
     for food in foods:
         food.try_re_spawn(settings)
+    print(len(population))
 
 
 run(settings=settings)
-ani = FuncAnimation(plt.gcf(), animate, interval=50)
+ani = FuncAnimation(plt.gcf(), animate, interval=2)
 plt.show()
 x = input("any key")
